@@ -1,0 +1,31 @@
+{
+  "name": "BOE Comparador",
+  "manifest_version": 3,
+  "version": "1.0.1",
+  "description": "Extensión No Oficial para comparar modificaciones legales publicadas en el Boletín Oficial del Estado (BOE).",
+  "permissions": [
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.boe.es/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_icon": {
+      "16": "/images/BOE-16.png",
+      "32": "/images/BOE-32.png",
+      "48": "/images/BOE-48.png",
+      "128": "/images/BOE-128.png"
+    },
+    "default_title": "Proyecto BOE Comparador",   
+    "default_popup": "git_popup.html"
+  },
+  "icons": {
+    "16": "/images/BOE-16.png",
+    "32": "/images/BOE-32.png",
+    "48": "/images/BOE-48.png",
+    "128": "/images/BOE-128.png"
+  }
+}
