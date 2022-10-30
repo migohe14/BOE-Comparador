@@ -7,6 +7,9 @@ BOE Comparador.
 
 > Extensión web para analizar cambios legales inspirado en como vemos los cambios en el código los desarrolladores. :computer:  
 
+## ¿Por qué liberar el código?
+
+Esta es una iniciativa de código abierto y sin ánimo de lucro que incorpora funcionalidades a una web pública, como es la del BOE. Liberar el código es una forma de que como desarrolladores podamos mejorar webs que son de todos. Desarrollar software por encima, como en este caso con extensiones web, es una forma de colaborar en webs públicas. Ojalá que en un futuro cercano la web del BOE sea también open source y podamos hacer pull request y colaborar directamente con cambios en la propia web. Hasta entonces, esta es una buena forma de implicarnos en cambiar las cosas.  
 
 ## Guía para colaborar en el proyecto
 
