@@ -1,4 +1,4 @@
-<img src="images/elboe.jpg" alt="threar or tweet logo" width="100px"/>
+<img src="chrome_extension/images/elboe.jpg" alt="threar or tweet logo" width="100px"/>
 
 BOE Comparador. 
 =======================================
@@ -25,7 +25,7 @@ Si eres desarrollador/a y quieres colaborar en el proyecto te dejo una serie de 
 #
 Te dejo por aquí un vídeo del funcionamiento de la extensión. 
 
-[![Extensión de Chrome para comparar versiones del Boletín Oficial del Estado (BOE) video](images/hotfix.jpg)](https://www.youtube.com/watch?v=mS0Hi2a9zaA&t=1s "Extensión de Chrome para comparar versiones del Boletín Oficial del Estado (BOE)")
+[![Extensión de Chrome para comparar versiones del Boletín Oficial del Estado (BOE) video](chrome_extension/images/hotfix.jpg)](https://www.youtube.com/watch?v=mS0Hi2a9zaA&t=1s "Extensión de Chrome para comparar versiones del Boletín Oficial del Estado (BOE)")
 
 Cualquier duda sobre el proyecto o como colaborar puedes contactarme aquí.
 
