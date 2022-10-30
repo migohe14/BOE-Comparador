@@ -20,7 +20,7 @@ Si eres desarrollador/a y quieres colaborar en el proyecto te dejo una serie de 
 ###
 - Siéntete libre para realizar cambios en la extensión, ya sean de refactorizar código (es la primera extensión que hago, seguro que hay mucho margen de mejora), añadir funcionalidades o mejorar rendimiento. 
 ###
-- Por último, cuando tengas los cambios, los Pull Request están abiertos. Mi idea es (si me da la vida) compartir las funcionalidades de que se proponen, por ejemplo, en Twitter y valorar si lo añadimos o no.
+- Por último, cuando tengas los cambios, los Pull Request están abiertos :smile:. Mi idea es (si me da la vida :sleeping:) compartir las funcionalidades que se proponen, por ejemplo, en Twitter y valorar si lo añadimos o no al proyecto.
 
 #
 Te dejo por aquí un vídeo del funcionamiento de la extensión. 
