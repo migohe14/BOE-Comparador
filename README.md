@@ -14,7 +14,7 @@ Si eres desarrollador/a y quieres colaborar en el proyecto te dejo una serie de 
 
 - Haz un fork del proyecto y descárgalo en tu local para hacer tus cambios.
 ###
-- Si no has desarrollado una extensión web antes, tranquil@, yo es la primera extensión que publico, al final es HTML, CSS y Javascript. Tienes que ir a [chrome://extensions/](chrome://extensions/), activar el "Modo desarrollador" (arriba a la derecha) y pulsar en "cargar descomprimida" y subir la carpeta del proyecto.
+- Si no has desarrollado una extensión web antes, tranquil@, yo es la primera extensión que publico, al final es HTML, CSS y Javascript. Tienes que ir a [chrome://extensions/](chrome://extensions/), activar el "Modo desarrollador" (arriba a la derecha), pulsar en "cargar descomprimida" y subir la carpeta del proyecto.
 ###
 - Una vez instalada la extensión sobre la que vas hacer tus cambios en tu navegador te rediriges a [https://www.boe.es/buscar/act.php?id=BOE-A-1985-12666](https://www.boe.es/buscar/act.php?id=BOE-A-1985-12666). Debajo de cada artículos verás un botón llamado "Comparar" que al ser pulsado se abre un popup comparando las versiones de ese artículo. 
 ###
@@ -27,7 +27,7 @@ Te dejo por aquí un vídeo del funcionamiento de la extensión.
 
 [![Extensión de Chrome para comparar versiones del Boletín Oficial del Estado (BOE) video](images/hotfix.jpg)](https://www.youtube.com/watch?v=mS0Hi2a9zaA&t=1s "Extensión de Chrome para comparar versiones del Boletín Oficial del Estado (BOE)")
 
-Cualquier duda también puedes contactarme.
+Cualquier duda sobre el proyecto o como colaborar puedes contactarme aquí.
 
 <a href="https://twitter.com/migohe14" target="_blank" rel="some text">![Foo](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)</a>
 <a href="https://www.linkedin.com/in/miguel-gonzalez-herrera/" target="_blank" rel="some text">![Foo](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)</a>
