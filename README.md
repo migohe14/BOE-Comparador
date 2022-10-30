@@ -12,7 +12,7 @@ BOE Comparador.
 
 Si eres desarrollador/a y quieres colaborar en el proyecto te dejo una serie de indicaciones que pueden serte útil:
 
-- Haz un fork del proyecto y descárgalo en tu local para hacer tus cambios.
+- Haz un fork del proyecto y descárgalo en tu local para hacer tus cambios. En el proyecto puedes ver el código tanto para la extensión de Chrome como para Firefox (lo ideal sería tenerlo en el mayor número de navegadores para facilitar su uso). Si vas a añadir una nueva funcionalidad intenta, en la medida de lo posible, realizarlo para todos los navagadores para tener uniformidad. Ten en cuenta que aunque todo parte de los lenguajes de la web (HTML, CSS y JavaScript) hay diferencias entre navegadores (ej. versiones de los manifest.json).
 ###
 - Si no has desarrollado una extensión web antes, tranquil@, yo es la primera extensión que publico, al final es HTML, CSS y Javascript. Tienes que ir a [chrome://extensions/](chrome://extensions/), activar el "Modo desarrollador" (arriba a la derecha), pulsar en "cargar descomprimida" y subir la carpeta del proyecto.
 ###
