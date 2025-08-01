@@ -7,15 +7,12 @@ BOE Comparador.
 
 > Extensión web para analizar cambios legales inspirado en como vemos los cambios en el código los desarrolladores. :computer:  
 
-## ¿Por qué liberar el código?
-
-Esta es una iniciativa de código abierto y sin ánimo de lucro que incorpora funcionalidades a una web pública, como es la del BOE. Liberar el código es una forma de que como desarrolladores podamos mejorar webs que son de todos. Desarrollar software por encima, como en este caso con extensiones web, es una forma de colaborar en webs públicas. Ojalá que en un futuro cercano la web del BOE sea también open source y podamos hacer pull request y colaborar directamente con cambios en la propia web. Hasta entonces, esta es una buena forma de implicarnos en cambiar las cosas.  
 
 ## Guía para colaborar en el proyecto
 
 Si eres desarrollador/a y quieres colaborar en el proyecto te dejo una serie de indicaciones que pueden serte útil:
 
-- Haz un fork del proyecto y descárgalo en tu local para hacer tus cambios. En el proyecto puedes ver el código tanto para la extensión de Chrome como para Firefox (lo ideal sería tenerlo en el mayor número de navegadores para facilitar su uso). Si vas a añadir una nueva funcionalidad intenta, en la medida de lo posible, realizarlo para todos los navagadores para tener uniformidad. Ten en cuenta que aunque todo parte de los lenguajes de la web (HTML, CSS y JavaScript) hay diferencias entre navegadores (ej. versiones de los manifest.json).
+- Haz un fork del proyecto y descárgalo en tu local para hacer tus cambios.
 ###
 - Si no has desarrollado una extensión web antes, tranquil@, yo es la primera extensión que publico, al final es HTML, CSS y Javascript. Tienes que ir a [chrome://extensions/](chrome://extensions/), activar el "Modo desarrollador" (arriba a la derecha), pulsar en "cargar descomprimida" y subir la carpeta del proyecto.
 ###

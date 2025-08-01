@@ -1,6 +1,7 @@
+
+
 if(typeof init === 'undefined'){
   const init = function(){
-    console.log("Extension loaded")
     // Add styles (compare strings)
     var style = document.createElement('style');
     style.innerHTML = `
@@ -494,6 +495,93 @@ if(typeof init === 'undefined'){
       this.htmldiff = diff;
     }
   // end htmlDiff
+
+  // Check params url ==> search "disposiciones legales"
+  let literals = [ 
+    {type: "dt", text: "Disposición transitoria"}, 
+    {type: "df", text: "Disposición final"}, 
+    {type: "da", text: "Disposición adicional"}
+  ]
+  let queryUrl = window.location.href.split("#search=")[1]
+  if(queryUrl) {
+      let typeDis = queryUrl.split("-")[0];
+      let idDis = Number(queryUrl.split("-")[1]);
+      
+      let filterLawString = literals.filter(dis => dis.type === typeDis)[0].text;
+      
+      let dSelected = idDis ? Array.from(document.querySelectorAll("h5")).filter(element => element.textContent.includes(filterLawString))[idDis - 1] : Array.from(document.querySelectorAll("h5")).filter(element => element.textContent.includes(filterLawString))[0];
+      if(dSelected) {
+          window.scrollTo( 0, dSelected.offsetTop );  
+      }
+      // Reset url
+      var newURL = location.href.split("#")[0];
+      window.history.pushState('object', document.title, newURL);
+  }
+  // 
+
+  // Insert links to "disposiciones legales", generate ==> ej. #search=df-1
+
+ let legalIds = [ 
+    {id: 1, names: ['única', 'primera', '1']}, 
+    {id: 2, names: ['segunda', '2']}, 
+    {id: 3, names: ['tercera', '3']},
+    {id: 4, names: ['cuarta', '4']},
+    {id: 5, names: ['quinta', '5']},
+    {id: 6, names: ['sexta', '6']},
+    {id: 7, names: ['séptima', '7']},
+    {id: 8, names: ['octava', '8']},
+    {id: 9, names: ['novena', '9']},
+    {id: 10, names: ['décima', '10']},
+    {id: 11, names: ['undécima', '11']},
+    {id: 12, names: ['duodécima', '12']},
+    {id: 13, names: ['decimotercera', '13']},
+    {id: 14, names: ['decimocuarta', '14']},
+    {id: 15, names: ['decimoquinta', '15']},
+    {id: 16, names: ['decimosexta', '16']},
+    {id: 17, names: ['decimoséptima', '17']},
+    {id: 18, names: ['decimoctava', '18']},
+    {id: 19, names: ['decimonovena', '19']},
+    {id: 20, names: ['vigésima', '20']}
+  ]
+
+for(let i = 0; i < document.getElementsByClassName("nota_pie_2").length; i++){
+
+    document.getElementsByClassName("nota_pie_2")[i].innerText.split(" ").map((item, index) => {
+        if(item.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,"") === "disposicion") {
+            let indexStr = index;
+            
+            let labelResult = `disposición ${document.getElementsByClassName("nota_pie_2")[i].innerText.split(" ")[indexStr + 1]} ${document.getElementsByClassName("nota_pie_2")[i].innerText.split(" ")[indexStr + 2]}`
+            let lawLink;
+            let currentNote = document.getElementsByClassName("nota_pie_2")[i];
+            let prevNote = document.getElementsByClassName("nota_pie_2")[i].previousElementSibling
+
+            if (currentNote?.getElementsByTagName('a')[0]) {
+                lawLink = currentNote.getElementsByTagName('a')[0].href;
+            } else if(!currentNote?.getElementsByTagName('a')[0] && prevNote?.getElementsByTagName('a')[0]) {
+                lawLink = prevNote.getElementsByTagName('a')[0].href;
+            } else if(!currentNote?.getElementsByTagName('a')[0] && !prevNote?.getElementsByTagName('a')[0]) {
+              lawLink = window.location.href;
+            }
+        
+
+            if(lawLink) {
+                let type = literals.filter(literal => literal.text.includes(labelResult.split(" ")[1]))[0]?.type;
+                let id = legalIds.filter(legalId => legalId.names.includes(labelResult.split(" ")[2].split(".")[0]))[0]?.id;
+
+                labelResult = labelResult.replace(")", "");
+                document.getElementsByClassName("nota_pie_2")[i].innerHTML = document.getElementsByClassName("nota_pie_2")[i].innerHTML.replace(new RegExp(labelResult, "ig"), `<a href="${lawLink}#search=${type}-${id}" target="_blank">${labelResult}</a>`)
+            }
+     
+            
+        }      
+    });
+}
+
+
+  // Cache 
+  let memoryCacheReforms = [];
+
+
   
   // Add compare button
     let articles = document.querySelectorAll("form.lista.formBOE > fieldset");
@@ -509,6 +597,7 @@ if(typeof init === 'undefined'){
           padding: 0;
           cursor: pointer;
           margin-top: 15px;
+          color: #912600;
           height: 33px;
           padding: 8px;
            border: 1px solid #ddd;
@@ -516,6 +605,11 @@ if(typeof init === 'undefined'){
           ">Comparar</button>`;
         }
       }
+
+      // URL params
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      const urlId = urlParams.get('id')
    
   // Event click - compare button & build popup
       let elementos = document.getElementsByClassName('open_comparator');
@@ -541,28 +635,42 @@ if(typeof init === 'undefined'){
           let reforms = document.querySelectorAll(`#${eventId.target.value} > form > fieldset > p`);
   
           let ReformsIds = Object.values(reforms).map((re) => {
-            return {value: re.children[0].defaultValue, 
-            label: re.innerText}
-  
-          });
-  
-          ReformsIds.map((reform, index)=>{
-            if(index === 0) {  
-                var lightBoxContent = document.querySelectorAll(`#${eventId.target.value} p[class*='parrafo']`);
-                reform.html = [...lightBoxContent].map(text => text.outerHTML).join(" ");
-  
+            let cacheHTML = null;
+            if(memoryCacheReforms.filter(cache => cache.id === re.children[0].defaultValue)[0]) {
+              var template = document.createElement('template');
+              template.innerHTML = memoryCacheReforms.filter(cache => cache.id === re.children[0].defaultValue)[0].html;
+              cacheHTML = template.content.querySelectorAll(`#${eventId.target.value} p[class*='parrafo']`);
             }
-            if(index !== 0) {
-              fetch(`${window.location.href}&p=${reform.value}#${eventId.target.value}`).then( (response) => {
-                // The API call was successful!
-                return response.text();
-              }).then( (html) => {
-                // This is the HTML from our response as a text string
-                var template = document.createElement('template');
-                template.innerHTML = html;
-                var lightBoxContent = template.content.querySelectorAll(`#${eventId.target.value} p[class*='parrafo']`);
-                reform.html = [...lightBoxContent].map(text => text.outerHTML).join(" ");
-            
+          
+
+            return {
+              value: re.children[0].defaultValue, 
+              label: re.innerText,
+              html: cacheHTML ? [...cacheHTML].map(text => text.outerHTML).join(" ") : null
+            }
+          }); 
+          Promise.all(ReformsIds.map(reform => !reform.html ? fetch(`${window.location.href.split('?')[0]}${window.location.search}&p=${reform.value}`) : reform.html))
+          .then(resp => Promise.all( resp.map(r => r.text ? r.text() : null)))
+          .then(result => {
+              ReformsIds.map((reform, index)=>{
+                if(!reform.html) {
+                  var template = document.createElement('template');
+                  template.innerHTML = result[index];
+                  var lightBoxContent = template.content.querySelectorAll(`#${eventId.target.value} p[class*='parrafo']`);
+                  var reformsTemplates = template.innerHTML;
+  
+                  reform.html = [...lightBoxContent].map(text => text.outerHTML).join(" ");
+                }
+                
+                // Cache reforms
+                if(!memoryCacheReforms.filter(cache => cache.id === reform.value)[0] || (Math.floor(Date.now() / 1000) - memoryCacheReforms.filter(cache => cache.id === reform.value)[0]?.timestamp) > 86400 ) {
+                  memoryCacheReforms.push({
+                    id: reform.value,
+                    html: reformsTemplates,
+                    timestamp: Math.floor(Date.now() / 1000)
+                  });
+                }
+
                 if(index === 1) {
                     // Add first
                     var divTag = document.createElement("DIV");
@@ -578,7 +686,9 @@ if(typeof init === 'undefined'){
                         ${optionStringTag}
                           </select>`
                         var popup_reforms = document.createElement("DIV");
-  
+                        var articleTitle = document.querySelector(`#${eventId.target.value} > h5`).innerText;
+                        var lawTitle = document.getElementsByClassName("documento-tit")[0].innerText;
+                        var twitterLawTitle = `${articleTitle}  ${lawTitle}`
                         popup_reforms.innerHTML = `<div id="popup_reforms_container${eventId.target.value}" style="
                         width: 1200px;
                         height: 600px;
@@ -592,11 +702,66 @@ if(typeof init === 'undefined'){
                         right: 0;
                         margin: auto;
                         top: ${eventId.layerY - 350}px;
-                        "><button style="margin-left: 96%;cursor: pointer;    width: 32px;
+                        ">
+                        <button style="margin-left: 96%;cursor: pointer;    width: 32px;
                         height: 32px;
                         opacity: 0.3;
                         border: none;
                         font-size: 20px;" onclick="document.getElementById('open_comparator${eventId.target.value}').disabled = false;document.getElementById('popup_reforms_container${eventId.target.value}').remove();">X</button>
+                      
+                        <div style="margin-left: 88%;">
+                        <style>
+                        .tooltip {
+                          position: relative;
+                          display: inline-block;
+                          border-bottom: 1px dotted black;
+                        }
+
+                        .tooltip .tooltiptext {
+                          visibility: hidden;
+                          width: 120px;
+                          background-color: #555;
+                          color: #fff;
+                          text-align: center;
+                          border-radius: 6px;
+                          padding: 5px 0;
+                          position: absolute;
+                          z-index: 1;
+                          bottom: 125%;
+                          left: 50%;
+                          margin-left: -60px;
+                          opacity: 0;
+                          transition: opacity 0.3s;
+                        }
+
+                        .tooltip .tooltiptext::after {
+                          content: "";
+                          position: absolute;
+                          top: 100%;
+                          left: 50%;
+                          margin-left: -5px;
+                          border-width: 5px;
+                          border-style: solid;
+                          border-color: #555 transparent transparent transparent;
+                        }
+
+                        .tooltip:hover .tooltiptext {
+                          visibility: visible;
+                          opacity: 1;
+                        }
+                        </style>
+                        <a class="tooltip" href="https://twitter.com/intent/tweet?text=Última reforma: ${twitterLawTitle.length > 200 ? twitterLawTitle.substring(0, 200) + '...' : twitterLawTitle} 📚 %23boe_comparador https://elboe.es/comparator?art=${eventId.target.value}%26id=${urlId}%26prev=${ReformsIds[1].value}%26current=${ReformsIds[0].value}" target="_blank">
+                        <span class="tooltiptext">Compartir</span>  
+                        <img style="margin-right: 10px;" src="https://firebasestorage.googleapis.com/v0/b/elboe-es.appspot.com/o/twitter.png?alt=media&token=28300ebc-2aa3-44ac-8229-b42919a28eb6" width="25px">
+                        </a>
+                        <a class="tooltip" onclick="navigator.clipboard.writeText('https://elboe.es/comparator?art=${eventId.target.value}&id=${urlId}&prev=${ReformsIds[1].value}&current=${ReformsIds[0].value}');alert('Enlace copiado!')">
+                        <span class="tooltiptext">Copiar</span>    
+                        <img style="cursor: pointer;"  src="https://firebasestorage.googleapis.com/v0/b/elboe-es.appspot.com/o/copiar.png?alt=media&token=59940072-6a0c-4176-a843-3a2041c036a7" width="25px">
+                        </a>
+                        </div>
+
+                        <div style="margin-left: 15px; margin-bottom: 15px; height: 20px; white-space: nowrap;overflow: hidden;text-overflow: ellipsis; color: #912600; font-weight: bold;">${articleTitle}</div>
+
                         <div style="margin-top: 15px;"><div style="float: left;width: 48%; color: #912600; margin-left: 15px;">${ReformsIds[0].label}</div><div style="float: right;width: 48%;">${selectTagString}</div></div>
                         <div style="padding: 10px;padding-top: 50px;">
                         <div style="height: 450px;
@@ -625,12 +790,9 @@ if(typeof init === 'undefined'){
                         });
   
                 }
-              }).catch( (err) => {
-                console.log(err)
               });
-            }
           });
-  
+
         let optionStringTag = ``
           for (var i = 0; i < ReformsIds.length; i++) {
             if(i !== 0) {

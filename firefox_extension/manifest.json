@@ -2,7 +2,7 @@
 
   "manifest_version": 2,
   "name": "BOE_Comparador",
-  "version": "1.0",
+  "version": "1.0.5",
   "description": "Extensión No Oficial para comparar modificaciones legales publicadas en el Boletín Oficial del Estado (BOE).",
   "action": {
     "default_icon": {
