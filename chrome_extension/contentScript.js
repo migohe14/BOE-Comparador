@@ -578,18 +578,13 @@ for(let i = 0; i < document.getElementsByClassName("nota_pie_2").length; i++){
 }
 
 
-  // Cache 
-  let memoryCacheReforms = [];
-
-
-  
   // Add compare button
     let articles = document.querySelectorAll("form.lista.formBOE > fieldset");
     if(articles && articles.length > 0) {
       for(let i = 0; i < articles.length; i++) {
         let compareButton = document.getElementById(articles[i].parentElement.action.split("#")[1]);
     
-        if(!document.getElementById(`open_comparator${articles[i].parentElement.action.split("#")[1]}`)) {
+        if(compareButton && !document.getElementById(`open_comparator${articles[i].parentElement.action.split("#")[1]}`)) {
           compareButton.innerHTML+= `<button title="Comparar" class="open_comparator"
           id="open_comparator${articles[i].parentElement.action.split("#")[1]}"
           value="${articles[i].parentElement.action.split("#")[1]}" style="
@@ -606,202 +601,138 @@ for(let i = 0; i < document.getElementsByClassName("nota_pie_2").length; i++){
         }
       }
 
-      // URL params
-      const queryString = window.location.search;
-      const urlParams = new URLSearchParams(queryString);
-      const urlId = urlParams.get('id')
-   
   // Event click - compare button & build popup
       let elementos = document.getElementsByClassName('open_comparator');
       for(let el of elementos) {
         el.addEventListener('click', async (eventId) => {
-          // Spinner
           var spinner = document.createElement("DIV");
-          spinner.innerHTML = `<div id="spinner_loading" style="
-          width: 100%;
-          height: 100%;
-          position: absolute;
-          top: 0;
-          background-color: black;
-          opacity: 0.2;
-          cursor: progress;
-          pointer-events: all !important;
-          z-index: 9999999999;
-          "></div>`
+          spinner.innerHTML = `<div id="spinner_loading" style="width: 100%;height: 100%;position: absolute;top: 0;background-color: black;opacity: 0.2;cursor: progress;pointer-events: all !important;z-index: 9999999999;"></div>`;
           document.body.appendChild(spinner);
     
           eventId.target.disabled = true;
   
-          let reforms = document.querySelectorAll(`#${eventId.target.value} > form > fieldset > p`);
+          const articleId = eventId.target.value;
+          const queryString = window.location.search;
+          const urlParams = new URLSearchParams(queryString);
+          const urlId = urlParams.get('id');
   
-          let ReformsIds = Object.values(reforms).map((re) => {
-            let cacheHTML = null;
-            if(memoryCacheReforms.filter(cache => cache.id === re.children[0].defaultValue)[0]) {
-              var template = document.createElement('template');
-              template.innerHTML = memoryCacheReforms.filter(cache => cache.id === re.children[0].defaultValue)[0].html;
-              cacheHTML = template.content.querySelectorAll(`#${eventId.target.value} p[class*='parrafo']`);
+          try {
+            const response = await fetch(`https://www.boe.es/datosabiertos/api/legislacion-consolidada/id/${urlId}/texto/bloque/${articleId}`, {
+              headers: {
+                'Accept': 'application/xml'
+              }
+            });
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
             }
-          
-
-            return {
-              value: re.children[0].defaultValue, 
-              label: re.innerText,
-              html: cacheHTML ? [...cacheHTML].map(text => text.outerHTML).join(" ") : null
+            const xmlString = await response.text();
+  
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+  
+            if (xmlDoc.getElementsByTagName("parsererror").length) {
+              throw new Error('Error parsing XML');
             }
-          }); 
-          Promise.all(ReformsIds.map(reform => !reform.html ? fetch(`${window.location.href.split('?')[0]}${window.location.search}&p=${reform.value}`) : reform.html))
-          .then(resp => Promise.all( resp.map(r => r.text ? r.text() : null)))
-          .then(result => {
-              ReformsIds.map((reform, index)=>{
-                if(!reform.html) {
-                  var template = document.createElement('template');
-                  template.innerHTML = result[index];
-                  var lightBoxContent = template.content.querySelectorAll(`#${eventId.target.value} p[class*='parrafo']`);
-                  var reformsTemplates = template.innerHTML;
+            
+            const versionNodes = Array.from(xmlDoc.getElementsByTagName('version')).reverse(); // Newest first
   
-                  reform.html = [...lightBoxContent].map(text => text.outerHTML).join(" ");
+            if (versionNodes.length < 2) {
+              alert('No hay suficientes versiones para comparar.');
+              document.getElementById('spinner_loading').remove();
+              eventId.target.disabled = false;
+              return;
+            }
+  
+            const formatDate = (dateStr) => { // e.g. "20150722"
+                if (!dateStr || dateStr.length !== 8) return dateStr;
+                return `${dateStr.substring(6, 8)}/${dateStr.substring(4, 6)}/${dateStr.substring(0, 4)}`;
+            };
+  
+            const ReformsIds = versionNodes.map((versionNode, index) => {
+                const fecha_publicacion = versionNode.getAttribute('fecha_publicacion');
+                const fecha_vigencia = versionNode.getAttribute('fecha_vigencia');
+
+                let label = '';
+                if (index === 0) {
+                    label = `Última actualización, publicada el ${formatDate(fecha_publicacion)}, en vigor a partir del ${formatDate(fecha_vigencia)}.`;
+                } else if (index === versionNodes.length - 1) {
+                    label = `Texto original, publicado el ${formatDate(fecha_publicacion)}, en vigor a partir del ${formatDate(fecha_vigencia)}.`;
+                } else {
+                    label = `Modificación publicada el ${formatDate(fecha_publicacion)}, en vigor a partir del ${formatDate(fecha_vigencia)}.`;
                 }
-                
-                // Cache reforms
-                if(!memoryCacheReforms.filter(cache => cache.id === reform.value)[0] || (Math.floor(Date.now() / 1000) - memoryCacheReforms.filter(cache => cache.id === reform.value)[0]?.timestamp) > 86400 ) {
-                  memoryCacheReforms.push({
-                    id: reform.value,
-                    html: reformsTemplates,
-                    timestamp: Math.floor(Date.now() / 1000)
-                  });
+
+                let htmlContent = '';
+                for (const child of versionNode.childNodes) {
+                    if (child.nodeType === 1) { // ELEMENT_NODE
+                        htmlContent += child.outerHTML;
+                    } else if (child.nodeType === 3) { // TEXT_NODE
+                        htmlContent += child.textContent;
+                    }
                 }
 
-                if(index === 1) {
-                    // Add first
-                    var divTag = document.createElement("DIV");
-                    divTag.setAttribute('id',`${eventId.target.value}container`);
-                    // Diff HTML strings
-                    let htmlDiffResult = htmldiff(reform.html, ReformsIds[0].html);
-                    
-                    let reformSelectedTemplate = reform.html;
-                    divTag.innerHTML = `<div>${reform.html}</div>`;
+                return {
+                    value: fecha_publicacion,
+                    label: label,
+                    html: htmlContent.trim()
+                };
+            });
   
-                        // Create popup_reforms
-                        let selectTagString = `<select id='popup_reforms_${eventId.target.value}' name="select">
-                        ${optionStringTag}
-                          </select>`
-                        var popup_reforms = document.createElement("DIV");
-                        var articleTitle = document.querySelector(`#${eventId.target.value} > h5`).innerText;
-                        var lawTitle = document.getElementsByClassName("documento-tit")[0].innerText;
-                        var twitterLawTitle = `${articleTitle}  ${lawTitle}`
-                        popup_reforms.innerHTML = `<div id="popup_reforms_container${eventId.target.value}" style="
-                        width: 1200px;
-                        height: 600px;
-                        position: absolute;
-                        padding: 10px;
-                        border-radius: 10px;
-                        border: 1px solid #ddd;
-                        padding: 1em;
-                        background-color: #f8f8f8;
-                        left: 0;
-                        right: 0;
-                        margin: auto;
-                        top: ${eventId.layerY - 350}px;
-                        ">
-                        <button style="margin-left: 96%;cursor: pointer;    width: 32px;
-                        height: 32px;
-                        opacity: 0.3;
-                        border: none;
-                        font-size: 20px;" onclick="document.getElementById('open_comparator${eventId.target.value}').disabled = false;document.getElementById('popup_reforms_container${eventId.target.value}').remove();">X</button>
-                      
-                        <div style="margin-left: 88%;">
-                        <style>
-                        .tooltip {
-                          position: relative;
-                          display: inline-block;
-                          border-bottom: 1px dotted black;
-                        }
-
-                        .tooltip .tooltiptext {
-                          visibility: hidden;
-                          width: 120px;
-                          background-color: #555;
-                          color: #fff;
-                          text-align: center;
-                          border-radius: 6px;
-                          padding: 5px 0;
-                          position: absolute;
-                          z-index: 1;
-                          bottom: 125%;
-                          left: 50%;
-                          margin-left: -60px;
-                          opacity: 0;
-                          transition: opacity 0.3s;
-                        }
-
-                        .tooltip .tooltiptext::after {
-                          content: "";
-                          position: absolute;
-                          top: 100%;
-                          left: 50%;
-                          margin-left: -5px;
-                          border-width: 5px;
-                          border-style: solid;
-                          border-color: #555 transparent transparent transparent;
-                        }
-
-                        .tooltip:hover .tooltiptext {
-                          visibility: visible;
-                          opacity: 1;
-                        }
-                        </style>
-                        <a class="tooltip" href="https://twitter.com/intent/tweet?text=Última reforma: ${twitterLawTitle.length > 200 ? twitterLawTitle.substring(0, 200) + '...' : twitterLawTitle} 📚 %23boe_comparador https://elboe.es/comparator?art=${eventId.target.value}%26id=${urlId}%26prev=${ReformsIds[1].value}%26current=${ReformsIds[0].value}" target="_blank">
-                        <span class="tooltiptext">Compartir</span>  
-                        <img style="margin-right: 10px;" src="https://firebasestorage.googleapis.com/v0/b/elboe-es.appspot.com/o/twitter.png?alt=media&token=28300ebc-2aa3-44ac-8229-b42919a28eb6" width="25px">
-                        </a>
-                        <a class="tooltip" onclick="navigator.clipboard.writeText('https://elboe.es/comparator?art=${eventId.target.value}&id=${urlId}&prev=${ReformsIds[1].value}&current=${ReformsIds[0].value}');alert('Enlace copiado!')">
-                        <span class="tooltiptext">Copiar</span>    
-                        <img style="cursor: pointer;"  src="https://firebasestorage.googleapis.com/v0/b/elboe-es.appspot.com/o/copiar.png?alt=media&token=59940072-6a0c-4176-a843-3a2041c036a7" width="25px">
-                        </a>
-                        </div>
-
-                        <div style="margin-left: 15px; margin-bottom: 15px; height: 20px; white-space: nowrap;overflow: hidden;text-overflow: ellipsis; color: #912600; font-weight: bold;">${articleTitle}</div>
-
-                        <div style="margin-top: 15px;"><div style="float: left;width: 48%; color: #912600; margin-left: 15px;">${ReformsIds[0].label}</div><div style="float: right;width: 48%;">${selectTagString}</div></div>
-                        <div style="padding: 10px;padding-top: 50px;">
-                        <div style="height: 450px;
-                        overflow-y: scroll;">    
-                        <div id="newHTML" style="    width: 48%;
-                        float: left;
-                        padding: 10px;
-                        background-color: white;
-                        border-radius: 5px;"><div>${htmlDiffResult}</div></div><div id="originalHTML" style="width: 48%;
-                        padding: 10px;
-                        float: right;
-                        background-color: white;
-                        border-radius: 5px;"><div>${reformSelectedTemplate}</div></div></div></div>
-                    </div>`;
-                        document.body.appendChild(popup_reforms);
-                        // Remove Spinner
-                        document.getElementById('spinner_loading').remove();
-                        document.getElementById(`popup_reforms_${eventId.target.value}`).addEventListener('change', (reformEvent) => {
-                    
-                          htmlDiffResult = htmldiff(ReformsIds.filter((re)=>re.value === reformEvent.target.value)[0].html, ReformsIds[0].html);
-                          
-                          reformSelectedTemplate = ReformsIds.filter((re)=>re.value === reformEvent.target.value)[0].html;
+            // Build the popup
+            let optionStringTag = ReformsIds
+                .filter((_, i) => i !== 0) // All except the most recent one
+                .map((option, i) => `<option value="${option.value}" ${i === 0 ? 'selected' : ''}>${option.label}</option>`)
+                .join('');
   
-                          document.querySelector("#newHTML > div").innerHTML = htmlDiffResult;
-                          document.querySelector("#originalHTML > div").innerHTML = reformSelectedTemplate;
-                        });
+            let htmlDiffResult = htmldiff(ReformsIds[1].html, ReformsIds[0].html);
+            let reformSelectedTemplate = ReformsIds[1].html;
   
+            let selectTagString = `<select id='popup_reforms_${articleId}' name="select">${optionStringTag}</select>`;
+            var popup_reforms = document.createElement("DIV");
+            var articleTitle = document.querySelector(`#${articleId} > h5`).innerText;
+            var lawTitle = document.getElementsByClassName("documento-tit")[0].innerText;
+            var twitterLawTitle = `${articleTitle}  ${lawTitle}`;
+            
+            popup_reforms.innerHTML = `<div id="popup_reforms_container${articleId}" style="width: 1200px; height: 600px; position: absolute; padding: 10px; border-radius: 10px; border: 1px solid #ddd; padding: 1em; background-color: #f8f8f8; left: 0; right: 0; margin: auto; top: ${eventId.layerY - 350}px; z-index: 10000000000;">
+              <button style="margin-left: 96%;cursor: pointer;width: 32px;height: 32px;opacity: 0.3;border: none;font-size: 20px;" onclick="document.getElementById('open_comparator${articleId}').disabled = false;this.parentElement.remove();">X</button>
+              <div style="margin-left: 88%;">
+                <style>.tooltip{position:relative;display:inline-block;border-bottom:1px dotted black}.tooltip .tooltiptext{visibility:hidden;width:120px;background-color:#555;color:#fff;text-align:center;border-radius:6px;padding:5px 0;position:absolute;z-index:1;bottom:125%;left:50%;margin-left:-60px;opacity:0;transition:opacity .3s}.tooltip .tooltiptext::after{content:"";position:absolute;top:100%;left:50%;margin-left:-5px;border-width:5px;border-style:solid;border-color:#555 transparent transparent transparent}.tooltip:hover .tooltiptext{visibility:visible;opacity:1}</style>
+                <a class="tooltip" href="https://twitter.com/intent/tweet?text=Última reforma: ${twitterLawTitle.length > 200 ? twitterLawTitle.substring(0, 200) + '...' : twitterLawTitle} 📚 %23boe_comparador https://elboe.es/comparator?art=${articleId}%26id=${urlId}%26prev=${ReformsIds[1].value}%26current=${ReformsIds[0].value}" target="_blank">
+                  <span class="tooltiptext">Compartir</span>  
+                  <img style="margin-right: 10px;" src="https://firebasestorage.googleapis.com/v0/b/elboe-es.appspot.com/o/twitter.png?alt=media&token=28300ebc-2aa3-44ac-8229-b42919a28eb6" width="25px">
+                </a>
+                <a class="tooltip" onclick="navigator.clipboard.writeText('https://elboe.es/comparator?art=${articleId}&id=${urlId}&prev=${ReformsIds[1].value}&current=${ReformsIds[0].value}');alert('Enlace copiado!')">
+                  <span class="tooltiptext">Copiar</span>    
+                  <img style="cursor: pointer;" src="https://firebasestorage.googleapis.com/v0/b/elboe-es.appspot.com/o/copiar.png?alt=media&token=59940072-6a0c-4176-a843-3a2041c036a7" width="25px">
+                </a>
+              </div>
+              <div style="margin-left: 15px; margin-bottom: 15px; height: 20px; white-space: nowrap;overflow: hidden;text-overflow: ellipsis; color: #912600; font-weight: bold;">${articleTitle}</div>
+              <div style="margin-top: 15px;"><div style="float: left;width: 48%; color: #912600; margin-left: 15px;">${ReformsIds[0].label}</div><div style="float: right;width: 48%;">${selectTagString}</div></div>
+              <div style="padding: 10px;padding-top: 50px;">
+                <div style="height: 450px; overflow-y: scroll;">    
+                  <div id="newHTML" style="width: 48%; float: left; padding: 10px; background-color: white; border-radius: 5px;"><div>${htmlDiffResult}</div></div>
+                  <div id="originalHTML" style="width: 48%; padding: 10px; float: right; background-color: white; border-radius: 5px;"><div>${reformSelectedTemplate}</div></div>
+                </div>
+              </div>
+            </div>`;
+            document.body.appendChild(popup_reforms);
+            document.getElementById('spinner_loading').remove();
+            document.getElementById(`popup_reforms_${articleId}`).addEventListener('change', (reformEvent) => {
+                const selectedReform = ReformsIds.find((re) => re.value === reformEvent.target.value);
+                if (selectedReform) {
+                    htmlDiffResult = htmldiff(selectedReform.html, ReformsIds[0].html);
+                    reformSelectedTemplate = selectedReform.html;
+
+                    document.querySelector("#newHTML > div").innerHTML = htmlDiffResult;
+                    document.querySelector("#originalHTML > div").innerHTML = reformSelectedTemplate;
                 }
-              });
-          });
-
-        let optionStringTag = ``
-          for (var i = 0; i < ReformsIds.length; i++) {
-            if(i !== 0) {
-              var option = ReformsIds[i];
-              optionStringTag = optionStringTag + `<option value="${option.value}">${option.label}</option>`
-            } 
+            });
+  
+          } catch (error) {
+              console.error('Error al obtener o procesar las versiones del artículo:', error);
+              alert('Error al cargar las versiones del artículo. Por favor, inténtelo de nuevo.');
+              document.getElementById('spinner_loading').remove();
+              eventId.target.disabled = false;
           }
-  
-  
         });
   
       }
