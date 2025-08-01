@@ -14,7 +14,135 @@ if(typeof init === 'undefined'){
       text-decoration: line-through;
       background-color: #fbb6c2;
       color: #555;
-    }`;
+    }
+
+    .open_comparator {
+      display: block;
+      cursor: pointer;
+      margin-top: 15px;
+      background-color: #123a63;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 15px;
+      font-size: 14px;
+      font-weight: bold;
+      text-align: center;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .open_comparator:hover {
+        background-color: #09233eff;
+    }
+    .open_comparator:active {
+        transform: scale(0.98);
+    }
+    .open_comparator:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+
+    .comparator-popup-container {
+      position: fixed;
+      width: 90vw;
+      max-width: 1200px;
+      height: 90vh;
+      max-height: 750px;
+      background-color: #f9f9f9;
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      z-index: 10000000000;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .comparator-popup-header {
+      padding: 15px 25px;
+      background-color: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .comparator-popup-title {
+      color: #333;
+      font-weight: 600;
+      font-size: 18px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-right: 20px;
+    }
+
+    .comparator-popup-actions {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-left: auto;
+    }
+
+    .comparator-popup-close {
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      font-size: 24px;
+      color: #888;
+      transition: color 0.2s;
+      padding: 0;
+      line-height: 1;
+      margin-left: 15px;
+    }
+    .comparator-popup-close:hover {
+      color: #333;
+    }
+
+    .comparator-tooltip {
+      position: relative;
+      display: inline-block;
+    }
+    .comparator-tooltip .tooltiptext {
+      visibility: hidden; width: 120px; background-color: #555; color: #fff; text-align: center; border-radius: 6px; padding: 5px 0; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -60px; opacity: 0; transition: opacity .3s;
+    }
+    .comparator-tooltip .tooltiptext::after {
+      content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: #555 transparent transparent transparent;
+    }
+    .comparator-tooltip:hover .tooltiptext {
+      visibility: visible; opacity: 1;
+    }
+
+    .comparator-popup-content {
+      flex-grow: 1; display: flex; flex-direction: column; padding: 20px 25px; overflow: hidden;
+    }
+
+    .comparator-popup-selectors {
+      display: flex; justify-content: space-between; gap: 20px; margin-bottom: 20px; flex-shrink: 0;
+    }
+
+    .comparator-popup-version-label {
+      flex: 1; color: #333; font-weight: 500; font-size: 14px;
+    }
+
+    .comparator-popup-select {
+      flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 5px; background-color: #fff; font-size: 14px;
+    }
+
+    .comparator-popup-diff-area {
+      flex-grow: 1; display: flex; gap: 20px; overflow: hidden;
+    }
+
+    .comparator-popup-column {
+      flex: 1; background-color: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; overflow-y: auto;
+    }
+    `;
     document.getElementsByTagName('head')[0].appendChild(style);
   
     // htmlDiff
@@ -585,19 +713,13 @@ for(let i = 0; i < document.getElementsByClassName("nota_pie_2").length; i++){
         let compareButton = document.getElementById(articles[i].parentElement.action.split("#")[1]);
     
         if(compareButton && !document.getElementById(`open_comparator${articles[i].parentElement.action.split("#")[1]}`)) {
-          compareButton.innerHTML+= `<button title="Comparar" class="open_comparator"
-          id="open_comparator${articles[i].parentElement.action.split("#")[1]}"
-          value="${articles[i].parentElement.action.split("#")[1]}" style="
-          display: block;
-          padding: 0;
-          cursor: pointer;
-          margin-top: 15px;
-          color: #912600;
-          height: 33px;
-          padding: 8px;
-           border: 1px solid #ddd;
-           border-radius: 5px;
-          ">Comparar</button>`;
+          const button = document.createElement('button');
+          button.title = "Comparar";
+          button.className = "open_comparator";
+          button.id = `open_comparator${articles[i].parentElement.action.split("#")[1]}`;
+          button.value = articles[i].parentElement.action.split("#")[1];
+          button.textContent = "Comparar";
+          compareButton.appendChild(button);
         }
       }
 
@@ -605,10 +727,6 @@ for(let i = 0; i < document.getElementsByClassName("nota_pie_2").length; i++){
       let elementos = document.getElementsByClassName('open_comparator');
       for(let el of elementos) {
         el.addEventListener('click', async (eventId) => {
-          var spinner = document.createElement("DIV");
-          spinner.innerHTML = `<div id="spinner_loading" style="width: 100%;height: 100%;position: absolute;top: 0;background-color: black;opacity: 0.2;cursor: progress;pointer-events: all !important;z-index: 9999999999;"></div>`;
-          document.body.appendChild(spinner);
-    
           eventId.target.disabled = true;
   
           const articleId = eventId.target.value;
@@ -617,6 +735,10 @@ for(let i = 0; i < document.getElementsByClassName("nota_pie_2").length; i++){
           const urlId = urlParams.get('id');
   
           try {
+            var spinner = document.createElement("DIV");
+            spinner.innerHTML = `<div id="spinner_loading" style="width: 100%;height: 100%;position: fixed;top: 0; left: 0; background-color: rgba(0,0,0,0.4);cursor: progress;z-index: 9999999999;"></div>`;
+            document.body.appendChild(spinner);
+
             const response = await fetch(`https://www.boe.es/datosabiertos/api/legislacion-consolidada/id/${urlId}/texto/bloque/${articleId}`, {
               headers: {
                 'Accept': 'application/xml'
@@ -686,35 +808,41 @@ for(let i = 0; i < document.getElementsByClassName("nota_pie_2").length; i++){
             let htmlDiffResult = htmldiff(ReformsIds[1].html, ReformsIds[0].html);
             let reformSelectedTemplate = ReformsIds[1].html;
   
-            let selectTagString = `<select id='popup_reforms_${articleId}' name="select">${optionStringTag}</select>`;
-            var popup_reforms = document.createElement("DIV");
+            let selectTagString = `<select id='popup_reforms_${articleId}' name="select" class="comparator-popup-select">${optionStringTag}</select>`;
+            var popupWrapper = document.createElement("DIV");
+            popupWrapper.id = `popup_wrapper_${articleId}`;
+
             var articleTitle = document.querySelector(`#${articleId} > h5`).innerText;
             var lawTitle = document.getElementsByClassName("documento-tit")[0].innerText;
             var twitterLawTitle = `${articleTitle}  ${lawTitle}`;
+            const newTabIconUrl = chrome.runtime.getURL('images/new-tab.png');
             
-            popup_reforms.innerHTML = `<div id="popup_reforms_container${articleId}" style="width: 1200px; height: 600px; position: absolute; padding: 10px; border-radius: 10px; border: 1px solid #ddd; padding: 1em; background-color: #f8f8f8; left: 0; right: 0; margin: auto; top: ${eventId.layerY - 350}px; z-index: 10000000000;">
-              <button style="margin-left: 96%;cursor: pointer;width: 32px;height: 32px;opacity: 0.3;border: none;font-size: 20px;" onclick="document.getElementById('open_comparator${articleId}').disabled = false;this.parentElement.remove();">X</button>
-              <div style="margin-left: 88%;">
-                <style>.tooltip{position:relative;display:inline-block;border-bottom:1px dotted black}.tooltip .tooltiptext{visibility:hidden;width:120px;background-color:#555;color:#fff;text-align:center;border-radius:6px;padding:5px 0;position:absolute;z-index:1;bottom:125%;left:50%;margin-left:-60px;opacity:0;transition:opacity .3s}.tooltip .tooltiptext::after{content:"";position:absolute;top:100%;left:50%;margin-left:-5px;border-width:5px;border-style:solid;border-color:#555 transparent transparent transparent}.tooltip:hover .tooltiptext{visibility:visible;opacity:1}</style>
-                <a class="tooltip" href="https://twitter.com/intent/tweet?text=Última reforma: ${twitterLawTitle.length > 200 ? twitterLawTitle.substring(0, 200) + '...' : twitterLawTitle} 📚 %23boe_comparador https://elboe.es/comparator?art=${articleId}%26id=${urlId}%26prev=${ReformsIds[1].value}%26current=${ReformsIds[0].value}" target="_blank">
-                  <span class="tooltiptext">Compartir</span>  
-                  <img style="margin-right: 10px;" src="https://firebasestorage.googleapis.com/v0/b/elboe-es.appspot.com/o/twitter.png?alt=media&token=28300ebc-2aa3-44ac-8229-b42919a28eb6" width="25px">
-                </a>
-                <a class="tooltip" onclick="navigator.clipboard.writeText('https://elboe.es/comparator?art=${articleId}&id=${urlId}&prev=${ReformsIds[1].value}&current=${ReformsIds[0].value}');alert('Enlace copiado!')">
-                  <span class="tooltiptext">Copiar</span>    
-                  <img style="cursor: pointer;" src="https://firebasestorage.googleapis.com/v0/b/elboe-es.appspot.com/o/copiar.png?alt=media&token=59940072-6a0c-4176-a843-3a2041c036a7" width="25px">
-                </a>
+            popupWrapper.innerHTML = `
+            <div id="popup_reforms_container_${articleId}" class="comparator-popup-container">
+              <div class="comparator-popup-header">
+                  <div class="comparator-popup-title">${articleTitle}</div>
+                  <div class="comparator-popup-actions">
+                      <a class="comparator-tooltip" title="Compartir en Twitter" href="https://twitter.com/intent/tweet?text=Última reforma: ${twitterLawTitle.length > 200 ? twitterLawTitle.substring(0, 200) + '...' : twitterLawTitle} 📚 %23boe_comparador https://elboe.es/comparator?art=${articleId}%26id=${urlId}%26prev=${ReformsIds[1].value}%26current=${ReformsIds[0].value}" target="_blank">
+                          <img src="https://firebasestorage.googleapis.com/v0/b/elboe-es.appspot.com/o/twitter.png?alt=media&token=28300ebc-2aa3-44ac-8229-b42919a28eb6" width="25px">
+                      </a>
+                      <a class="comparator-tooltip" title="Abrir en una nueva pestaña" href="https://elboe.es/comparator?art=${articleId}&id=${urlId}&prev=${ReformsIds[1].value}&current=${ReformsIds[0].value}" target="_blank">
+                          <img style="cursor: pointer;" src="${newTabIconUrl}" width="25px">
+                      </a>
+                  </div>
+                  <button class="comparator-popup-close" onclick="document.getElementById('open_comparator${articleId}').disabled = false; document.getElementById('popup_wrapper_${articleId}').remove();">&times;</button>
               </div>
-              <div style="margin-left: 15px; margin-bottom: 15px; height: 20px; white-space: nowrap;overflow: hidden;text-overflow: ellipsis; color: #912600; font-weight: bold;">${articleTitle}</div>
-              <div style="margin-top: 15px;"><div style="float: left;width: 48%; color: #912600; margin-left: 15px;">${ReformsIds[0].label}</div><div style="float: right;width: 48%;">${selectTagString}</div></div>
-              <div style="padding: 10px;padding-top: 50px;">
-                <div style="height: 450px; overflow-y: scroll;">    
-                  <div id="newHTML" style="width: 48%; float: left; padding: 10px; background-color: white; border-radius: 5px;"><div>${htmlDiffResult}</div></div>
-                  <div id="originalHTML" style="width: 48%; padding: 10px; float: right; background-color: white; border-radius: 5px;"><div>${reformSelectedTemplate}</div></div>
-                </div>
+              <div class="comparator-popup-content">
+                  <div class="comparator-popup-selectors">
+                      <div class="comparator-popup-version-label">${ReformsIds[0].label}</div>
+                      ${selectTagString}
+                  </div>
+                  <div class="comparator-popup-diff-area">
+                      <div id="newHTML" class="comparator-popup-column"><div>${htmlDiffResult}</div></div>
+                      <div id="originalHTML" class="comparator-popup-column"><div>${reformSelectedTemplate}</div></div>
+                  </div>
               </div>
             </div>`;
-            document.body.appendChild(popup_reforms);
+            document.body.appendChild(popupWrapper);
             document.getElementById('spinner_loading').remove();
             document.getElementById(`popup_reforms_${articleId}`).addEventListener('change', (reformEvent) => {
                 const selectedReform = ReformsIds.find((re) => re.value === reformEvent.target.value);
@@ -730,7 +858,8 @@ for(let i = 0; i < document.getElementsByClassName("nota_pie_2").length; i++){
           } catch (error) {
               console.error('Error al obtener o procesar las versiones del artículo:', error);
               alert('Error al cargar las versiones del artículo. Por favor, inténtelo de nuevo.');
-              document.getElementById('spinner_loading').remove();
+              const spinner = document.getElementById('spinner_loading');
+              if (spinner) spinner.parentElement.remove();
               eventId.target.disabled = false;
           }
         });

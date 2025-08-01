@@ -27,5 +27,11 @@
     "32": "/images/BOE-32.png",
     "48": "/images/BOE-48.png",
     "128": "/images/BOE-128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [ "images/*.png" ],
+      "matches": [ "https://www.boe.es/*" ]
+    }
+  ]
 }

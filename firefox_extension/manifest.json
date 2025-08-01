@@ -1,9 +1,17 @@
 {
-
-  "manifest_version": 2,
-  "name": "BOE_Comparador",
+  "name": "BOE Comparador",
+  "manifest_version": 3,
   "version": "1.0.5",
   "description": "Extensión No Oficial para comparar modificaciones legales publicadas en el Boletín Oficial del Estado (BOE).",
+  "permissions": [
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.boe.es/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_icon": {
       "16": "/images/BOE-16.png",
@@ -20,11 +28,10 @@
     "48": "/images/BOE-48.png",
     "128": "/images/BOE-128.png"
   },
-  "content_scripts": [
+  "web_accessible_resources": [
     {
-      "matches": ["*://*.boe.es/*"],
-      "js": ["contentScript.js"]
+      "resources": [ "images/*.png" ],
+      "matches": [ "https://www.boe.es/*" ]
     }
   ]
-
 }
