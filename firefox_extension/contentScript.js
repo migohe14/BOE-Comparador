@@ -812,7 +812,15 @@ for(let i = 0; i < document.getElementsByClassName("nota_pie_2").length; i++){
             var popupWrapper = document.createElement("DIV");
             popupWrapper.id = `popup_wrapper_${articleId}`;
 
-            var articleTitle = document.querySelector(`#${articleId} > h5`).innerText;
+            let articleTitle = '';
+            const h5Element = document.querySelector(`#${articleId} > h5`);
+            const h4Element = document.querySelector(`#${articleId} > h4`);
+
+            if (h5Element) {
+                articleTitle = h5Element.innerText;
+            } else if (h4Element) {
+                articleTitle = h4Element.innerText;
+            }
             var lawTitle = document.getElementsByClassName("documento-tit")[0].innerText;
             var twitterLawTitle = `${articleTitle}  ${lawTitle}`;
             const newTabIconUrl = chrome.runtime.getURL('images/new-tab.png');
